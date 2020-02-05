@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from quickstart.models import UserGroup
+from quickstart.models import UserDetails
 
-class UserGroup(serializers.ModelSerializer):
+class UserDetailsSerializers(serializers.ModelSerializer):
     class Meta:
-        model = UserGroup
-        fields = ['id', 'groupname', 'startDate', 'usercount', 'createBy', 'isActive','AmountPerUser','sarkriGhata','groupbiddingtype']
+        model =UserDetails
+        fields = ['id', 'groupname', 'startDate', 'usercount',
+         'createBy', 'isActive','AmountPerUser','sarkriGhata','groupbiddingtype']
