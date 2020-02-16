@@ -1,6 +1,11 @@
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from django.urls import reverse
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponseRedirect
 from rest_framework.response import Response
+from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
 from quickstart.models import UserDetails,UserGroup
 from quickstart.API.serializer import *
@@ -10,6 +15,21 @@ from django.contrib.auth import login as django_login, logout as django_logout
 @api_view(['GET'])
 def get_user_details(self,request):
     return Response(request)
+
+
+
+@login_required(login_url="/login")
+@api_view(['POST'])
+def addgroup(request):
+    context = {}
+    context['user'] = 'manish'
+    return Response(context['user'])
+
+@login_required(login_url="/login/")
+@api_view(['POST'])
+def logout_user(request):
+    logout(request)
+    return  Response('Logout Successfully')
 
 
 @api_view(['POST'])
