@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
 from quickstart.models import UserDetails,GroupMember
 from django.contrib.auth.models import User
 from rest_framework import exceptions
@@ -23,6 +24,7 @@ class RegisterSerializer(serializers.Serializer):
         if username and Password and Firstname and LastName:
             user = User(username=username, password=Password,
             first_name=Firstname,last_name=LastName,email=Email)
+            user.set_password(Password)
             user.save()
             data['user']=user           
         else:
@@ -50,7 +52,7 @@ class LoginSerializer(serializers.Serializer):
                     msg = "User is deactivated."
                     raise exceptions.ValidationError(msg)
             else:
-                msg = "Unable to login with given credentials." 
+                msg = "Unable to login with given credentials."+ make_password(Password)
                 raise exceptions.ValidationError(msg)
         else:
             msg = "Must provide username and password both."
