@@ -11,20 +11,78 @@ from quickstart.models import UserDetails,UserGroup
 from quickstart.API.serializer import *
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import login as django_login, logout as django_logout
+from rest_framework import generics
+from rest_framework import mixins
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from quickstart.models import *
+
+
+class GroupListView(generics.GenericAPIView,
+                    mixins.ListModelMixin,
+                    mixins.CreateModelMixin,
+                    mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin):
+    serializer_class = UserGroupSerializers
+    queryset = UserGroup.objects.all()
+    lookup_field = 'id'
+    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+
+
+    def get(self, request, id=None):
+        if id:
+            return self.retrieve(request, id)
+        else:
+            return self.list(request)
+
+    def post(self, request):
+        return self.create(request)
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    def put(self, request, id=None):
+        return self.update(request, id)
+
+    def perform_update(self, serializer):
+        print(self.request.user)
+        serializer.save(created_by=self.request.user)        
+
+    def delete(self, request, id=None):
+        return self.destroy(request, id)
+
 
 @api_view(['GET'])
 def get_user_details(self,request):
     return Response(request)
 
 
-
 @login_required(login_url="/login")
 @api_view(['POST'])
-def addgroup(request):
-    context = {}
-    context['user'] = 'manish'
-    return Response(context['user'])
+def addgroupuser(request):
+    data=request.data
+    token = data['token']
+    userid = Token.objects.get(key=token).user_id
+    serializer = AddGroupUserSerializer(data=data,context={'user_id':userid})
+    serializer.is_valid(raise_exception=True)
+    return Response(token)
 
+
+@login_required(login_url="/login")
+@api_view(['GET', 'POST'])
+def addgroup(request):
+    if request.method == 'POST':
+        data=request.data
+        token = data['token']
+        userid = Token.objects.get(key=token).user_id
+        serializer = AddGroupSerializer(data=data,context={'user_id':userid})
+        serializer.is_valid(raise_exception=True)
+        return Response(token)
+    
 @login_required(login_url="/login/")
 @api_view(['POST'])
 def logout_user(request):

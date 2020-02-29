@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from  django.contrib.auth.models import User,Group
 
 # Create your models here.
@@ -16,16 +17,20 @@ class UserGroup(models.Model):
     startDate=models.DateField(max_length=12,null=True)
     usercount = models.IntegerField(null=True)
     createBy = models.IntegerField(null=True)
-    isActive = models.IntegerField(null=True) 
+    isActive = models.IntegerField(default=1) 
     AmountPerUser = models.DecimalField(max_digits=8, decimal_places=2)
     sarkriGhata =  models.DecimalField(max_digits=8, decimal_places=2)
     groupbiddingtype = models.IntegerField()
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
 
 class GroupMember(models.Model):   
     id = models.AutoField(primary_key=True)
     UserGroup= models.ForeignKey(UserGroup, on_delete=models.CASCADE)
     Mobilenumber = models.BigIntegerField() 
     UserName = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
 
 
 class GroupHistory(models.Model):   
@@ -37,8 +42,9 @@ class GroupHistory(models.Model):
     AmountPaid = models.DecimalField(max_digits=8, decimal_places=2)
     AmountDue = models.DecimalField(max_digits=8, decimal_places=2)       
     startDate=models.DateField(max_length=12)
-
-
+    created_at = models.DateTimeField(default=timezone.now)
+   
+   
 class GroupBidding(models.Model):   
     id = models.AutoField(primary_key=True)
     GroupMember= models.ForeignKey(GroupMember, on_delete=models.CASCADE)
@@ -50,6 +56,8 @@ class GroupBidding(models.Model):
     IsSelect = models.IntegerField()  
     Cyclenumber = models.IntegerField()  
     CreateDate=models.DateField(max_length=12)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
 
 class AmountRecived(models.Model):   
     id = models.AutoField(primary_key=True)
@@ -60,6 +68,8 @@ class AmountRecived(models.Model):
     RevicerName = models.TextField()
     Recivermobile =models.BigIntegerField() 
     RecivedDate=models.DateField(max_length=12)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
 
 
 class Biddingtype(models.Model):   
