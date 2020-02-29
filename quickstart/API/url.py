@@ -10,5 +10,9 @@ urlpatterns =[
     path('login',login_user,name='loginuser'),
     path('logout',logout_user,name='logoutuser'),
     path('addgroup',addgroup,name='addgroup'),
-    path('addgroupuser',addgroupuser,name='addgroupuser')
+    path('addgroupuser',addgroupuser,name='addgroupuser'),
+    path('addUsergroup/', UserGroup.as_view(), name='usergroup_add'),
+    path('addUsergroup/<int:id>', UserGroup.as_view(), name='usergroup_add'),
+
+    
 ]

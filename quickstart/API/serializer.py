@@ -121,28 +121,26 @@ class AddGroupUserSerializer(serializers.Serializer):
         else:
             msg = "Must provide all required field."
             raise exceptions.ValidationError(msg)
-        return data   
-class EmployeeSerializer(serializers.ModelSerializer):
-    #profile = ProfileSerializer()
+        return data 
 
-    class Meta:
-        model = User
-        fields = ['username', 'first_name',
-                'last_name', 'email']
-
-
-
-class UserGroupSerializers(serializers.ModelSerializer):
-    class Meta:
-        model =UserDetails
-        fields = ['id', 'groupname', 'startDate', 'usercount',
-         'createBy', 'isActive','AmountPerUser','sarkriGhata','groupbiddingtype']
 
 
 class UserGroupSerializer(serializers.ModelSerializer):
+
     class Meta:
-        model= GroupMember
-        fields =['UserGroup',
-        'UserName',
-        'Mobilenumber'
+        model = UserGroup
+        fields = [
+            "id",
+            "groupname",
+            "startDate",
+            "usercount",
+            "createBy",
+            "isActive",
+            "AmountPerUser",
+            "sarkriGhata",
+            "groupbiddingtype"
         ]
+  
+
+
+

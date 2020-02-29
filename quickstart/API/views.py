@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 from rest_framework.response import Response
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
-from quickstart.models import UserDetails,UserGroup
+#from quickstart.models import UserDetails,UserGroup
 from quickstart.API.serializer import *
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import login as django_login, logout as django_logout
@@ -19,19 +19,22 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonRespons
 from quickstart.models import *
 
 
-class GroupListView(generics.GenericAPIView,
+class UserGroup(generics.GenericAPIView,
                     mixins.ListModelMixin,
                     mixins.CreateModelMixin,
                     mixins.RetrieveModelMixin,
                     mixins.UpdateModelMixin,
                     mixins.DestroyModelMixin):
-    serializer_class = UserGroupSerializers
+
+    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserGroupSerializer
     queryset = UserGroup.objects.all()
     lookup_field = 'id'
-    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    
 
-
+    def get_queryset(self):
+        return self.queryset.filter(createBy=self.request.user,isActive=1)
 
     def get(self, request, id=None):
         if id:
@@ -43,13 +46,12 @@ class GroupListView(generics.GenericAPIView,
         return self.create(request)
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(createBy=self.request.user)
 
     def put(self, request, id=None):
         return self.update(request, id)
 
     def perform_update(self, serializer):
-        print(self.request.user)
         serializer.save(created_by=self.request.user)        
 
     def delete(self, request, id=None):

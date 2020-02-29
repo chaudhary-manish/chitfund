@@ -16,7 +16,7 @@ class UserGroup(models.Model):
     groupname = models.TextField(max_length=30,null=True)
     startDate=models.DateField(max_length=12,null=True)
     usercount = models.IntegerField(null=True)
-    createBy = models.IntegerField(null=True)
+    createBy = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     isActive = models.IntegerField(default=1) 
     AmountPerUser = models.DecimalField(max_digits=8, decimal_places=2)
     sarkriGhata =  models.DecimalField(max_digits=8, decimal_places=2)
