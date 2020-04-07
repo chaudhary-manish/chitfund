@@ -6,12 +6,11 @@ from django.contrib.auth.models import User
 from rest_framework import exceptions
 from quickstart.models import *
 
-
+# user register 
 class RegisterSerializer(serializers.Serializer):    
     MobileNumber = serializers.CharField()
     Firstname = serializers.CharField()
     LastName = serializers.CharField()
-    Email = serializers.CharField()
     Password = serializers.CharField()
 
 
@@ -19,21 +18,29 @@ class RegisterSerializer(serializers.Serializer):
         username = data.get("MobileNumber", "")
         Firstname = data.get("Firstname", "")
         LastName = data.get("LastName", "")
-        Email = data.get("Email", "")
+        Email = 'chaudhary94rc@gmail.com'
         Password = data.get("Password", "")
+        userexist = User.objects.filter(username = username).count()
+
+        #check weather use is alreday exit or not
+        if userexist != 0:
+            msg = "User already exist with given mobile number"
+            raise exceptions.ValidationError(msg)
 
         if username and Password and Firstname and LastName:
             user = User(username=username, password=Password,
             first_name=Firstname,last_name=LastName,email=Email)
             user.set_password(Password)
             user.save()
+            userdeatil = UserDetails(User=user)
+            userdeatil.save()
             data['user']=user           
         else:
             msg = "Must provide username and password FirstName and LastName both."
             raise exceptions.ValidationError(msg)
         return data
 
-
+# user Login
 class LoginSerializer(serializers.Serializer):    
     MobileNumber = serializers.CharField()
     Password = serializers.CharField()
@@ -60,38 +67,38 @@ class LoginSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
         return data
 
-class AddGroupSerializer(serializers.Serializer):    
-    GroupName = serializers.CharField()
-    AmountPaidByUser = serializers.FloatField()
-    SarkariGhata = serializers.FloatField()
-    TotalUser = serializers.IntegerField()
-    StartDate = serializers.DateField()
-    GroupBiddingType = serializers.IntegerField()
+# class AddGroupSerializer(serializers.Serializer):    
+#     GroupName = serializers.CharField()
+#     AmountPaidByUser = serializers.FloatField()
+#     SarkariGhata = serializers.FloatField()
+#     TotalUser = serializers.IntegerField()
+#     StartDate = serializers.DateField()
+#     GroupBiddingType = serializers.IntegerField()
 
 
-    def validate(self,data):
-        GroupName = data.get("GroupName", "")
-        AmountPaidByUser = data.get("AmountPaidByUser", "")
-        SarkariGhata = data.get("SarkariGhata", "")
-        TotalUser = data.get("TotalUser", "")
-        StartDate = data.get("StartDate","")
-        GroupBiddingType = data.get("GroupBiddingType", "")
-        user_id = self.context["user_id"]
-        userdetail =User.objects.get(id = user_id)
+#     def validate(self,data):
+#         GroupName = data.get("GroupName", "")
+#         AmountPaidByUser = data.get("AmountPaidByUser", "")
+#         SarkariGhata = data.get("SarkariGhata", "")
+#         TotalUser = data.get("TotalUser", "")
+#         StartDate = data.get("StartDate","")
+#         GroupBiddingType = data.get("GroupBiddingType", "")
+#         user_id = self.context["user_id"]
+#         userdetail =User.objects.get(id = user_id)
 
-        if GroupBiddingType and StartDate and TotalUser and SarkariGhata and AmountPaidByUser and GroupName:
-            NewGroup =UserGroup(groupname=GroupName ,startDate=StartDate,usercount= TotalUser
-                             ,createBy=user_id,AmountPerUser= AmountPaidByUser,sarkriGhata=SarkariGhata,
-                             groupbiddingtype=GroupBiddingType,isActive=1)
-            NewGroup.save()
-            NewGroupUser =GroupMember(UserGroup=NewGroup.pk,Mobilenumber=userdetail.username,UserName=userdetail.first_name)
-            NewGroupUser.save()   
+#         if GroupBiddingType and StartDate and TotalUser and SarkariGhata and AmountPaidByUser and GroupName:
+#             NewGroup =UserGroup(groupname=GroupName ,startDate=StartDate,usercount= TotalUser
+#                              ,createBy=user_id,AmountPerUser= AmountPaidByUser,sarkriGhata=SarkariGhata,
+#                              groupbiddingtype=GroupBiddingType,isActive=1)
+#             NewGroup.save()
+#             NewGroupUser =GroupMember(UserGroup=NewGroup.pk,Mobilenumber=userdetail.username,UserName=userdetail.first_name)
+#             NewGroupUser.save()   
                                         
-            return NewGroup.pk           
-        else:
-            msg = "Must provide all required field."
-            raise exceptions.ValidationError(msg)
-        return data        
+#             return NewGroup.pk           
+#         else:
+#             msg = "Must provide all required field."
+#             raise exceptions.ValidationError(msg)
+#         return data      
 
 class AddGroupUserSerializer(serializers.Serializer):    
     GroupID = serializers.IntegerField()
@@ -103,10 +110,21 @@ class AddGroupUserSerializer(serializers.Serializer):
         Mobilenumber = data.get("Mobilenumber", "")
         UserName = data.get("UserName", "")
         #user_id = self.context["user_id"]
-        total = UserGroup.objects.get(id=GroupID).usercount
+        groupuser = UserGroup.objects.get(id=GroupID)
+        total = groupuser.usercount
+        isactviegroup = groupuser.isActive
+        Status = groupuser.groupStatus
         Totalcount = GroupMember.objects.filter(UserGroup=GroupID).count()
 
-        if total == Totalcount:
+        if Status != 5:
+            msg = "Group is no longer in open state" 
+            raise exceptions.ValidationError(msg)
+
+        elif isactviegroup == 0:
+            msg = "Group is no longer active" 
+            raise exceptions.ValidationError(msg)
+
+        elif total == Totalcount:
             msg = "Group Member count filled" 
             raise exceptions.ValidationError(msg)
 
@@ -117,7 +135,8 @@ class AddGroupUserSerializer(serializers.Serializer):
             Group =  UserGroup.objects.get(id=GroupID)
             NewGroupUser =GroupMember(UserGroup=Group,Mobilenumber=Mobilenumber,UserName=UserName)
             NewGroupUser.save()                             
-            return NewGroupUser.pk           
+            msg = "User Added successfully" 
+            raise exceptions.ValidationError(msg)       
         else:
             msg = "Must provide all required field."
             raise exceptions.ValidationError(msg)
@@ -126,7 +145,6 @@ class AddGroupUserSerializer(serializers.Serializer):
 
 
 class UserGroupSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = UserGroup
         fields = [
@@ -138,9 +156,90 @@ class UserGroupSerializer(serializers.ModelSerializer):
             "isActive",
             "AmountPerUser",
             "sarkriGhata",
+            "groupStatus",
             "groupbiddingtype"
         ]
-  
+
+
+class GroupMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupMember
+        fields = [
+            "id",
+            "UserGroup",
+            "Mobilenumber",
+            "UserName"
+        ]
+
+class GroupBiddingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupBidding
+        fields = [
+            "id",
+            "GroupMember",
+            "UserGroup",
+            "ActualAmount",
+            "biddingAmount",
+            "Cyclenumber",
+            "IsSelect"
+        ]
+
+class StatEndGroupUserSerializer(serializers.ModelSerializer):
+     class Meta:
+        model = UserGroup
+        fields = [
+            "id",
+            "groupname",
+            "startDate",
+            "usercount",
+            "createBy",
+            "isActive",
+            "AmountPerUser",
+            "sarkriGhata",
+            "groupbiddingtype",
+            "groupStatus",
+            "biddingdate",
+            "biddgingCycle",
+         ]
+
+class GroupBiddingEntriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupBiddingEntries
+        fields = [
+            "id",
+            "GroupBidding",
+            "biddingAmount",
+            "selectedName",
+            "SelectedMobileNumber",
+            "Cyclenumber"
+        ]
 
 
 
+class UserDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDetails
+        fields = ['DateofBirth', 'AlternateMobileNumber', 'ProfilePic']
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    #UserDetails = UserDetailsSerializer()
+
+    class Meta:
+        model = User
+        depth = 1
+        fields = ('username', 'first_name',
+                'last_name', 'UserDetails', 'email',
+                'is_staff', 'is_active', 'date_joined',
+                'is_superuser')
+
+class GroupPaymentHistorySerializer(serializers.ModelSerializer):
+    #UserDetails = UserDetailsSerializer()
+
+    class Meta:
+        model = GroupPaymentHistory
+        fields = ('id', 'GroupBidding',
+                'Mobilenumber', 'UserName', 'ActualAmount',
+                'AmountPaid', 'AmountDue', 'Cyclenumber',
+                'IsReceived','Status')
+         

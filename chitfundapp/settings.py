@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'chitfundapp.wsgi.application'
 DATABASES = {
     'default': {
          'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'chitfund',
+        'NAME': 'kametee',
         'USER': 'postgres',
         'PASSWORD': 'root',
         'HOST': 'localhost',
@@ -114,6 +114,18 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/2.0/howto/static-files/
+
+#upload javascript file and css file
+STATIC_URL = '/static/'
+STATIC_ROOT = 'static'
+ 
+ # Media file to uplaod image and video
+MEDIA_URL = '/media/'
+MEDIA_ROOT = 'media'
 
 LANGUAGE_CODE = 'en-us'
 
